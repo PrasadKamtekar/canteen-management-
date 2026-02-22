@@ -6,6 +6,7 @@ import EmailVerify from "./componet/authenticaton/emailverification.jsx"
 import ResetPass from "./componet/authenticaton/resetpassword.jsx"
 import Home from "./componet/pagesCustomer/home.jsx"
 import Cart from "./componet/pagesCustomer/cart.jsx"
+import Profile from "./componet/pagesCustomer/Profile.jsx"
 import { Route, Routes } from "react-router-dom";
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
             </Route>
              <Route path="/home" element={<Home/>} />
              <Route path="/cart" element={<Cart/>} />
+             <Route path="/profile" element={<Profile />}/>
         </Routes>
     );
 }
