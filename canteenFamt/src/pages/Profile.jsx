@@ -1,14 +1,19 @@
 import { useMemo, useState } from "react";
 import SubPageHeader from "../componet/Dashboard/userDash/SubPageHeader.jsx";
 import { getCurrentUserProfile, saveCurrentUserProfile } from "../utils/localstorage.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 function Profile() {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+    const { currentUser } = useAuth();
     const storedProfile = getCurrentUserProfile();
     const [isEditing, setIsEditing] = useState(false);
+    
+    // Determine display name fallback
+    const displayName = currentUser?.displayName || currentUser?.email?.split('@')[0] || "";
+
     const [profile, setProfile] = useState(() => ({
-        username: storedProfile?.username || currentUser?.username || "",
-        email: storedProfile?.email || "",
+        username: storedProfile?.username || displayName || "",
+        email: storedProfile?.email || currentUser?.email || "",
         mobile: storedProfile?.mobile || "",
         profileImage: storedProfile?.profileImage || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=300"
     }));

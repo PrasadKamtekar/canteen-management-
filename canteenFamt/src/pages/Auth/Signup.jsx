@@ -1,39 +1,52 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"
+import { useAuth } from "../../context/AuthContext";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
 function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
-  const generateOtp = () => Math.floor(1000 + Math.random() * 9000).toString();
-
-  const handleSignup = () => {
+  const handleSignup = async (e) => {
+    e.preventDefault();
     if (!username || !email || !password) {
-      alert("Please enter username, email and password");
+      setError("Please enter username, email and password");
       return;
     }
 
-    const existingUsers = JSON.parse(localStorage.getItem("users")) || [];
-    const alreadyExists = existingUsers.some(
-      (u) => u.username === username || u.email === email
-    );
-    if (alreadyExists) {
-      alert("User already exists with same username/email");
-      return;
+    try {
+      setError("");
+      setLoading(true);
+      
+      // Create user in Firebase Auth
+      const userCredential = await signup(email, password);
+      const user = userCredential.user;
+      
+      // Add user to Firestore database
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        username: username,
+        email: email,
+        role: "customer", // default role
+        createdAt: new Date()
+      });
+
+      // No need for OTP anymore, just go to home or login
+      alert("Signup successful!");
+      navigate("/home");
+      
+    } catch (err) {
+      setError("Failed to create an account: " + err.message);
     }
-
-    const code = generateOtp();
-    localStorage.setItem("otp", JSON.stringify({ email, code, purpose: "signup" }));
-    localStorage.setItem("pendingSignup", JSON.stringify({ username, email, password }));
-    alert(`Your OTP is ${code}`);
-
-    setUsername("");
-    setEmail("");
-    setPassword("");
-    navigate("/emailverify");
+    
+    setLoading(false);
   };
 
   return (
@@ -46,6 +59,8 @@ function Signup() {
       </div>
 
       <div className="bg-[#F8FAFC] rounded-xl flex flex-col gap-4 p-4 sm:p-5 mt-1">
+        {error && <div className="bg-red-100 text-red-600 p-2 rounded text-sm">{error}</div>}
+        
         <div>
           <h2 className="text-sm sm:text-base mb-2 font-[400] text-gray-500">Username</h2>
           <input
@@ -76,7 +91,8 @@ function Signup() {
 
         <button
           onClick={handleSignup}
-          className="bg-[#FBA808] w-full py-2.5 rounded-lg text-base text-[#F8FAFC] font-semibold"
+          disabled={loading}
+          className="bg-[#FBA808] w-full py-2.5 rounded-lg text-base text-[#F8FAFC] font-semibold disabled:opacity-50"
         >
           Sign up
         </button>

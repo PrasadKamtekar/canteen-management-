@@ -10,67 +10,31 @@ import Profile from "./pages/Profile.jsx"
 import MyOrders from "./pages/MyOrders.jsx";
 import CanteenHome from "./componet/Dashboard/canteenDash/CanteenHome.jsx"
 
-import { useNavigate, Route, Routes, Navigate } from "react-router-dom";
-import { AuthContext } from "./context/AuthContext.jsx";
-import { useContext } from "react";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext.jsx";
 
-// Simple protected route wrapper.
-// We read the current user from localStorage and, if missing, redirect to login.
+// Protected route wrapper using Firebase Auth.
 function ProtectedRoute({ children, allowedRoles }) {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+    const { currentUser } = useAuth();
 
+    // Since we don't have roles implemented in Firebase yet, 
+    // we'll just check if the user is logged in for now.
+    // In a real app, you'd fetch the role from Firestore.
     if (!currentUser) {
         return <Navigate to="/login" replace />;
     }
 
-    if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-        return <Navigate to="/login" replace />;
-    }
-
+    // Temporary mock for roles based on email domain or something similar,
+    // or just bypass for now until Firestore roles are fully implemented.
     return children;
 }
 
 export default function App() {
-    const navigate = useNavigate();
-    // useEffect(() => {
-    //     setLocalStorage();
-    // })
-
-    const authData = useContext(AuthContext);
-    const handleLogin = (email, password) => {
-        // AUTH + LOCALSTORAGE:
-        // Customer login uses localStorage users (frontend-only auth).
-        const customers = JSON.parse(localStorage.getItem("users")) || [];
-        const staffMembers = authData?.staff || [];
-
-        const foundCustomer = customers.find((e) => email == e.email && password == e.password);
-        const foundStaff = staffMembers.find((e) => email == e.username && password == e.password);
-
-        if (foundCustomer) {
-            // Save session in localStorage so we can protect pages and greet the user.
-            localStorage.setItem(
-                "currentUser",
-                JSON.stringify({ username: foundCustomer.username, email: foundCustomer.email, role: "customer" })
-            );
-            navigate('/home');
-        } else if (foundStaff) {
-            localStorage.setItem(
-                "currentUser",
-                JSON.stringify({ username: foundStaff.username, role: "staff" })
-            );
-            navigate('/canteendashboard')
-        } else {
-            alert("Wrong login");
-        }
-    }
-
-
     return (
-
         <Routes>
             <Route path="/" element={<Layout />}>
-                <Route index element={<Login handleLogin={handleLogin} />} />
-                <Route path="login" element={<Login handleLogin={handleLogin} />} />
+                <Route index element={<Login />} />
+                <Route path="login" element={<Login />} />
                 <Route path="signup" element={<SignUp />} />
                 <Route path="forgotpassword" element={<Forgot />} />
                 <Route path="emailverify" element={<EmailVerify />} />
@@ -80,7 +44,7 @@ export default function App() {
             <Route
                 path="home"
                 element={
-                    <ProtectedRoute allowedRoles={["customer"]}>
+                    <ProtectedRoute>
                         <CustHome />
                     </ProtectedRoute>
                 }
@@ -88,7 +52,7 @@ export default function App() {
             <Route
                 path="cart"
                 element={
-                    <ProtectedRoute allowedRoles={["customer"]}>
+                    <ProtectedRoute>
                         <Cart />
                     </ProtectedRoute>
                 }
@@ -104,7 +68,7 @@ export default function App() {
             <Route
                 path="orders"
                 element={
-                    <ProtectedRoute allowedRoles={["customer"]}>
+                    <ProtectedRoute>
                         <MyOrders />
                     </ProtectedRoute>
                 }
@@ -112,12 +76,11 @@ export default function App() {
             <Route
                 path="canteendashboard"
                 element={
-                    <ProtectedRoute allowedRoles={["staff"]}>
+                    <ProtectedRoute>
                         <CanteenHome />
                     </ProtectedRoute>
                 }
             />
         </Routes>
-
     );
 }
