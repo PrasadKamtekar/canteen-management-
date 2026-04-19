@@ -12,6 +12,20 @@ import {
 } from "../utils/firebaseUtils.js";
 import toast from "react-hot-toast";
 
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => {
+      resolve(true);
+    };
+    script.onerror = () => {
+      resolve(false);
+    };
+    document.body.appendChild(script);
+  });
+};
+
 function Cart() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -65,20 +79,60 @@ function Cart() {
       return;
     }
 
-    try {
-      toast.loading("Placing order...", { id: "order" });
-      const userName = currentUser.displayName || currentUser.email.split('@')[0];
-      const { token } = await placeOrder(currentUser.uid, userName, cartItems, total);
-      
-      toast.success("Order placed successfully!", { id: "order" });
-      setOrderSuccess({
-        token,
-        userName,
-        total
-      });
-    } catch (error) {
-      toast.error("Failed to place order", { id: "order" });
+    toast.loading("Loading payment gateway...", { id: "order" });
+    const isLoaded = await loadRazorpay();
+
+    if (!isLoaded) {
+      toast.error("Failed to load payment gateway", { id: "order" });
+      return;
     }
+
+    const userName = currentUser.displayName || currentUser.email.split('@')[0];
+
+    const options = {
+      key: "rzp_test_SfLSUjiPymkMlt",
+      amount: total * 100, // Amount is in paise
+      currency: "INR",
+      name: "FAMT Canteen",
+      description: "Food Order Payment",
+      image: "https://cdn-icons-png.flaticon.com/512/3703/3703377.png",
+      handler: async function (response) {
+        // Payment succeeded
+        try {
+          toast.loading("Placing order...", { id: "order" });
+          const { token } = await placeOrder(currentUser.uid, userName, cartItems, total);
+          
+          toast.success("Order placed successfully!", { id: "order" });
+          setOrderSuccess({
+            token,
+            userName,
+            total
+          });
+        } catch (error) {
+          toast.error("Failed to save order", { id: "order" });
+        }
+      },
+      prefill: {
+        name: userName,
+        email: currentUser.email,
+        contact: "9999999999"
+      },
+      theme: {
+        color: "#0F6657"
+      }
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    
+    paymentObject.on('payment.failed', function (response) {
+      toast.error(response.error.description || "Payment failed", { id: "order" });
+    });
+
+    // Also handle when user closes the modal
+    // Note: Razorpay doesn't have an explicit dismiss event, but the window will just close.
+    // The previous toast.loading is dismissed so it doesn't spin forever.
+    paymentObject.open();
+    toast.dismiss("order");
   };
 
   if (orderSuccess) {
