@@ -17,8 +17,8 @@ function Signup() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (!username || !email || !password) {
-      toast.error("Please enter username, email and password");
+    if (!username.trim() || !email.trim() || !password.trim()) {
+      toast.error("Please enter username, email and password.");
       return;
     }
 

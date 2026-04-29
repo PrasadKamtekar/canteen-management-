@@ -14,9 +14,15 @@ function Login() {
 
     async function handleEmailLogin(e) {
         e.preventDefault();
+        const trimmedEmail = email.trim();
+        
+        if (!trimmedEmail || !password.trim()) {
+            toast.error("Please enter both email and password.");
+            return;
+        }
+
         try {
             setLoading(true);
-            const trimmedEmail = email.trim();
             const userCredential = await login(trimmedEmail, password);
             toast.success("Successfully logged in!");
             
