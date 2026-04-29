@@ -27,7 +27,7 @@ function Login() {
             toast.success("Successfully logged in!");
             
             // Check if admin
-            if (userCredential.user.email === 'famt@gmail.com') {
+            if (userCredential.user.email === 'famtcanteen1@gmail.com') {
                 navigate('/canteendashboard');
             } else {
                 navigate('/home');
@@ -65,7 +65,7 @@ function Login() {
             const userCredential = await loginWithGoogle();
             toast.success("Successfully logged in with Google!");
             
-            if (userCredential.user.email === 'famt@gmail.com') {
+            if (userCredential.user.email === 'famtcanteen1@gmail.com') {
                 navigate('/canteendashboard');
             } else {
                 navigate('/home');

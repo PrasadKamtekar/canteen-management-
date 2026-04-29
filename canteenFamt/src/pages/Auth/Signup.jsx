@@ -34,13 +34,13 @@ function Signup() {
         uid: user.uid,
         username: username,
         email: email,
-        role: email === "famt@gmail.com" ? "admin" : "customer",
+        role: email === "famtcanteen1@gmail.com" ? "admin" : "customer",
         createdAt: new Date()
       });
 
       toast.success("Signup successful! Welcome to FAMTCANTEEN.");
       
-      if (email === "famt@gmail.com") {
+      if (email === "famtcanteen1@gmail.com") {
         navigate("/canteendashboard");
       } else {
         navigate("/home");
