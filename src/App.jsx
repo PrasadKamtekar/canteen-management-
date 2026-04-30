@@ -2,7 +2,7 @@ import Layout from "./componet/authenticaton/Layout.jsx";
 import Login from "./pages/Auth/Login.jsx";
 import SignUp from "./pages/Auth/Signup.jsx";
 import Forgot from "./pages/Auth/Forgotpassword.jsx";
-import CustHome from "./componet/Dashboard/userDash/Home.jsx"
+import CustHome from "./componet/Dashboard/userDash/home.jsx"
 import Cart from "./pages/cart.jsx"
 import Profile from "./pages/Profile.jsx"
 import MyOrders from "./pages/MyOrders.jsx";
